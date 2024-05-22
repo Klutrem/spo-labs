@@ -93,7 +93,7 @@ func runLexer() {
 			}
 		}
 	}
-	if token != "" && state != CommentType {
+	if token != "" && state != CommentType && token != "#" {
 		tokenSaver.Add(state, token)
 	}
 	tokenSaver.Print()
