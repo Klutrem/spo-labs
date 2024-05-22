@@ -41,6 +41,10 @@ type Token struct {
 	Value string
 }
 
+//код для второй лабы: берешь Никитин код, правила меняешь на свои, они должны быть в правильном порядке
+//первое правило, например a = f должно быть последним, потому что сначала идут самые сложные, а потом простые, которые могут примениться после применения сложных
+// если не сжимается до конца - ошибка в написании правил или ошибка в написании самого текстового файла
+
 // Add adds a token to the TokenSaver
 func (ts *TokenSaver) Add(tokenType, value string) {
 	ts.tokens = append(ts.tokens, Token{Type: tokenType, Value: value})
@@ -74,7 +78,7 @@ func runLexer() {
 				token = char
 				state = getLexemeType(char)
 			}
-		case IdentifierType, NumberType, OperatorType, ParenthesesType:
+		case IdentifierType, NumberType, OperatorType, ParenthesesType, ErrorType:
 			if isValid(char, state) {
 				token += char
 			} else {
