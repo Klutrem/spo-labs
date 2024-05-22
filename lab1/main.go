@@ -7,54 +7,50 @@ import (
 	"strings"
 )
 
-// Constants for delimiters and character sets
+// Константы для разделителей и наборов символов
 const (
-	Delimiter     = ";"
-	Alphabet      = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	Alphanumeric  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	Numbers       = "0123456789"
-	OperatorChars = "+-*/"
-	Parentheses   = "()"
+	Delimiter     = ";"                                                              // Символ разделителя
+	Alphabet      = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"           // Алфавит
+	Alphanumeric  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" // Алфавит и цифры
+	Numbers       = "0123456789"                                                     // Цифры
+	OperatorChars = "+-*/"                                                           // Символы операторов
+	Parentheses   = "()"                                                             // Символы скобок
 )
 
-// Lexeme types
+// Типы лексем
 const (
-	DelimiterType   = "delimiter"
-	IdentifierType  = "identifier"
-	ConstType       = "const"
-	AssignmentType  = "assignment"
-	OperatorType    = "operator"
-	ParenthesesType = "parentheses"
-	NumberType      = "number"
-	ErrorType       = "error"
-	CommentType     = "comment"
+	DelimiterType   = "delimiter"   // Разделитель
+	IdentifierType  = "identifier"  // Идентификатор
+	ConstType       = "const"       // Константа
+	AssignmentType  = "assignment"  // Присваивание
+	OperatorType    = "operator"    // Оператор
+	ParenthesesType = "parentheses" // Скобки
+	NumberType      = "number"      // Число
+	ErrorType       = "error"       // Ошибка
+	CommentType     = "comment"     // Комментарий
 )
 
-// TokenSaver struct to store and print tokens
+// Структура TokenSaver для хранения и печати токенов
 type TokenSaver struct {
 	tokens []Token
 }
 
-// Token represents a lexical token with its type and value
+// Структура Token представляет лексему с ее типом и значением
 type Token struct {
-	Type  string
-	Value string
+	Type  string // Тип
+	Value string // Значение
 }
 
-//код для второй лабы: берешь Никитин код, правила меняешь на свои, они должны быть в правильном порядке
-//первое правило, например a = f должно быть последним, потому что сначала идут самые сложные, а потом простые, которые могут примениться после применения сложных
-// если не сжимается до конца - ошибка в написании правил или ошибка в написании самого текстового файла
-
-// Add adds a token to the TokenSaver
+// Add добавляет токен в TokenSaver
 func (ts *TokenSaver) Add(tokenType, value string) {
 	ts.tokens = append(ts.tokens, Token{Type: tokenType, Value: value})
 }
 
-// Print prints all tokens in the TokenSaver
+// Print выводит все токены из TokenSaver
 func (ts *TokenSaver) Print() {
-	fmt.Println("Tokens:")
+	fmt.Println("Токены:")
 	for _, token := range ts.tokens {
-		fmt.Printf("{ Type: %s, Value: %s }\n", token.Type, token.Value)
+		fmt.Printf("{ Тип: %s, Значение: %s }\n", token.Type, token.Value)
 	}
 }
 
@@ -62,133 +58,139 @@ func main() {
 	runLexer()
 }
 
-// runLexer processes input and generates tokens
+// runLexer обрабатывает ввод и генерирует токены
 func runLexer() {
-	state := DelimiterType
-	token := ""
-	tokenSaver := &TokenSaver{}
-	characters := readCharacters()
+	state := DelimiterType         // Начальное состояние - разделитель
+	token := ""                    // Текущий токен
+	tokenSaver := &TokenSaver{}    // Сохранитель токенов
+	characters := readCharacters() // Получаем ввод
 
 	for i := 0; i < len(characters); i++ {
-		char := string(characters[i])
+		char := string(characters[i]) // Текущий символ
 		switch state {
 		case DelimiterType:
-			handleDelimiter(char, tokenSaver)
+			handleDelimiter(char, tokenSaver) // Обработка разделителя
 			if char != " " && char != "\n" && char != "\r" {
-				token = char
-				state = getLexemeType(char)
+				token = char                // Начинаем новый токен
+				state = getLexemeType(char) // Определяем тип лексемы
 			}
 		case IdentifierType, NumberType, OperatorType, ParenthesesType, ErrorType:
 			if isValid(char, state) {
-				token += char
+				token += char // Продолжаем собирать текущий токен
 			} else {
-				tokenSaver.Add(state, token)
-				token = ""
-				state = DelimiterType
-				i-- // Re-process current character
+				tokenSaver.Add(state, token) // Завершаем текущий токен и сохраняем
+				token = ""                   // Начинаем новый токен
+				state = DelimiterType        // Возвращаемся к обработке разделителей
+				i--                          // Повторно обрабатываем текущий символ
 			}
 		case AssignmentType:
-			handleAssignment(char, tokenSaver, &state, &token, &i, characters)
+			handleAssignment(char, tokenSaver, &state, &token, &i, characters) // Обработка оператора присваивания
 		case ConstType:
-			handleConst(char, tokenSaver, &state, &token, &i, characters)
+			handleConst(char, tokenSaver, &state, &token, &i, characters) // Обработка константы
 		case CommentType:
 			if char == "\n" {
-				state = DelimiterType
+				state = DelimiterType // Обработка комментария до конца строки
 			}
 		}
 	}
 	if token != "" && state != CommentType && token != "#" {
-		tokenSaver.Add(state, token)
+		tokenSaver.Add(state, token) // Добавляем последний токен, если он есть
 	}
-	tokenSaver.Print()
+	tokenSaver.Print() // Печать всех токенов
 }
 
+// handleDelimiter обрабатывает разделитель
 func handleDelimiter(char string, tokenSaver *TokenSaver) {
 	if char == Delimiter {
-		tokenSaver.Add(DelimiterType, Delimiter)
+		tokenSaver.Add(DelimiterType, Delimiter) // Добавляем разделитель в токены
 	}
 }
 
+// getLexemeType возвращает тип лексемы для заданного символа
 func getLexemeType(char string) string {
 	if strings.Contains(Alphabet, char) {
-		return IdentifierType
+		return IdentifierType // Идентификатор
 	} else if strings.Contains(Numbers, char) {
-		return NumberType
+		return NumberType // Число
 	} else if char == "'" {
-		return ConstType
+		return ConstType // Константа
 	} else if char == "#" {
-		return CommentType
+		return CommentType // Комментарий
 	} else if strings.Contains(OperatorChars, char) {
-		return OperatorType
+		return OperatorType // Оператор
 	} else if strings.Contains(Parentheses, char) {
-		return ParenthesesType
+		return ParenthesesType // Скобки
 	} else if char == ";" {
-		return DelimiterType
+		return DelimiterType // Разделитель
 	} else if char == ":" {
-		return AssignmentType
+		return AssignmentType // Оператор присваивания
 	}
-	return ErrorType
+	return ErrorType // Ошибка
 }
 
+// isValid проверяет, является ли символ допустимым в текущем состоянии
 func isValid(char string, state string) bool {
 	switch state {
 	case IdentifierType:
-		return strings.Contains(Alphanumeric, char)
+		return strings.Contains(Alphanumeric, char) // Допустимы буквы и цифры
 	case NumberType:
-		return strings.Contains(Numbers, char)
+		return strings.Contains(Numbers, char) // Допустимы только цифры
 	case ConstType:
-		return char != "'"
+		return char != "'" // Допустимы любые символы, кроме '
 	case OperatorType:
-		return strings.Contains(OperatorChars, char)
+		return strings.Contains(OperatorChars, char) // Допустимы только символы операторов
 	case ParenthesesType:
-		return strings.Contains(Parentheses, char)
+		return strings.Contains(Parentheses, char) // Допустимы только символы скобок
 	}
-	return false
+	return false // В остальных случаях недопустимо
 }
 
+// handleAssignment обрабатывает оператор присваивания
 func handleAssignment(char string, tokenSaver *TokenSaver, state *string, token *string, i *int, characters []byte) {
 	if char == "=" && (*i)+1 < len(characters) && characters[(*i)-1] == ':' {
-		*state = AssignmentType
-		*token = ":="
-		(*i)++ // Skip '=' character
-		tokenSaver.Add(AssignmentType, *token)
-		*state = DelimiterType
+		*state = AssignmentType                // Устанавливаем тип лексемы - оператор присваивания
+		*token = ":="                          // Задаем значение токена как оператор присваивания
+		(*i)++                                 // Пропускаем символ '=', так как он уже обработан
+		tokenSaver.Add(AssignmentType, *token) // Добавляем оператор присваивания в токены
+		*state = DelimiterType                 // Возвращаемся к обработке разделителей
 	} else {
-		tokenSaver.Add(OperatorType, *token)
-		*token = ""
-		*state = ErrorType
+		tokenSaver.Add(OperatorType, *token) // Добавляем текущий токен как оператор
+		*token = ""                          // Начинаем новый токен
+		*state = ErrorType                   // Устанавливаем тип лексемы - ошибка
 	}
 }
 
+// handleConst обрабатывает константу
 func handleConst(char string, tokenSaver *TokenSaver, state *string, token *string, i *int, characters []byte) {
 	if strings.Contains(Alphabet, char) && checkConstBrackets(*i, characters) {
-		*state = ConstType
-		*token = fmt.Sprint("'", char, "'")
-		(*i)++ // Skip 'const character
-		(*i)++ // Skip ' character
-		tokenSaver.Add(ConstType, *token)
-		*state = DelimiterType
+		*state = ConstType                  // Устанавливаем тип лексемы - константа
+		*token = fmt.Sprint("'", char, "'") // Задаем значение токена как константу
+		(*i)++                              // Пропускаем символ константы
+		(*i)++                              // Пропускаем символ "'", так как он уже обработан
+		tokenSaver.Add(ConstType, *token)   // Добавляем константу в токены
+		*state = DelimiterType              // Возвращаемся к обработке разделителей
 	} else {
-		tokenSaver.Add(ErrorType, *token)
-		*token = ""
-		*state = ErrorType
+		tokenSaver.Add(ErrorType, *token) // Добавляем текущий токен как ошибку
+		*token = ""                       // Начинаем новый токен
+		*state = ErrorType                // Устанавливаем тип лексемы - ошибка
 	}
 }
 
+// checkConstBrackets проверяет соответствие скобок в константе
 func checkConstBrackets(i int, characters []byte) bool {
-	return (string(characters[i-1]) == "'" && string(characters[i+1]) == "'")
+	return (string(characters[i-1]) == "'" && string(characters[i+1]) == "'") // Проверяем наличие скобок для константы
 }
 
-// readCharacters reads characters from stdin
+// readCharacters считывает символы из стандартного ввода
 func readCharacters() []byte {
-	reader := bufio.NewReader(os.Stdin)
+	reader := bufio.NewReader(os.Stdin) // Создаем новый Reader для стандартного ввода
 	var characters []byte
 	for {
-		input, err := reader.ReadString('\n')
+		input, err := reader.ReadString('\n') // Считываем строку из ввода
 		if err != nil {
-			break
+			break // Завершаем цикл, если произошла ошибка или достигнут конец ввода
 		}
-		characters = append(characters, []byte(input)...)
+		characters = append(characters, []byte(input)...) // Добавляем символы из строки в массив символов
 	}
-	return characters
+	return characters // Возвращаем массив символов
 }
