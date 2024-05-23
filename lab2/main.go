@@ -3,48 +3,53 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	lab1 "lab2/modules" // Importing the lexer package from the first lab
+	lab1 "lab2/modules" // Импорт пакета лексера из первой лабораторной
 	"os"
 )
 
-// Rule represents a production rule in the grammar
+// Rule представляет правило продукции в грамматике
 type Rule struct {
-	Svertka string   // The production symbol
-	Posl    []string // The production sequence
+	Svertka string   // Символ продукции
+	Posl    []string // Последовательность продукции
 }
 
-// Node represents a node in the parse tree
+// Node представляет узел в дереве разбора
 type Node struct {
-	Type     string // NonTerminal or Terminal
-	Lexem    string // Lexeme value
+	Type     string // Нетерминал или терминал
+	Lexem    string // Значение лексемы
 	Children []*Node
 }
 
 func main() {
-	// Generate tokens using the lexer from the first lab
+	// Генерация токенов с использованием лексера из первой лабораторной
 	lexems := lab1.RunLexer()
 
-	// Check for lexer errors
+	// Проверка на ошибки лексера
 	if hasErrors(lexems) {
-		fmt.Println("Lexer encountered errors.")
+		fmt.Println("Лексер обнаружил ошибки.")
 		return
 	}
 
-	// Define grammar rules
+	// Определение правил грамматики
 	rules := []Rule{
-		{Svertka: "S", Posl: []string{"identifier", ":=", "F"}},
-		{Svertka: "F", Posl: []string{"F", "+", "T"}},
-		{Svertka: "F", Posl: []string{"T"}},
-		{Svertka: "T", Posl: []string{"T", "*", "E"}},
-		{Svertka: "T", Posl: []string{"E"}},
-		{Svertka: "E", Posl: []string{"(", "F", ")"}},
 		{Svertka: "E", Posl: []string{"identifier"}},
+		{Svertka: "E", Posl: []string{"arithmetic", "l_bracket", "F", "r_bracket"}},
+		{Svertka: "E", Posl: []string{"arithmetic", "l_bracket", "identifier", "r_bracket"}},
+		{Svertka: "E", Posl: []string{"l_bracket", "identifier", "r_bracket"}},
+		{Svertka: "E", Posl: []string{"l_bracket", "F", "r_bracket"}},
+		{Svertka: "T", Posl: []string{"T", "arithmetic", "E"}},
+		{Svertka: "T", Posl: []string{"E"}},
+		{Svertka: "F", Posl: []string{"identifier", "arithmetic", "identifier"}},
+		{Svertka: "F", Posl: []string{"F", "arithmetic", "T"}},
+		{Svertka: "F", Posl: []string{"T"}},
+		{Svertka: "S", Posl: []string{"F", "operator", "identifier", "delimiter"}},
+		{Svertka: "S", Posl: []string{"F", "operator", "F", "delimiter"}},
 	}
 
-	// Perform parsing
+	// Выполнение синтаксического анализа
 	svertka, tree := parse(lexems, rules)
 
-	// Print the result
+	// Вывод результата
 	fmt.Println("Свертка:", svertka)
 	if svertka == "S" {
 		fmt.Println("Выражение корректно")
@@ -54,7 +59,7 @@ func main() {
 	}
 }
 
-// hasErrors checks if lexer encountered errors
+// hasErrors проверяет, были ли ошибки у лексера
 func hasErrors(tokens []lab1.Token) bool {
 	for _, token := range tokens {
 		if token.Type == lab1.ErrorType {
@@ -64,45 +69,50 @@ func hasErrors(tokens []lab1.Token) bool {
 	return false
 }
 
-// parse function performs parsing based on the given tokens and grammar rules
+// parse выполняет синтаксический анализ на основе заданных токенов и правил грамматики
 func parse(tokens []lab1.Token, rules []Rule) (string, *Node) {
 	var stack []*Node
 
-	// Push all tokens to the stack
+	// Помещение всех токенов в стек
 	for _, token := range tokens {
 		stack = append(stack, &Node{Type: token.Type, Lexem: token.Value})
 	}
 
-	// Apply rules until the stack contains only one element
+	// Применение правил, пока стек не содержит только один элемент
 	for len(stack) > 1 {
 		applied := false
 
 		for _, rule := range rules {
 			if canApplyRule(stack, rule) {
-				fmt.Printf("Applying rule: %s -> %v\n", rule.Svertka, rule.Posl)
+				fmt.Printf("Применение правила: %s -> %v\n", rule.Svertka, rule.Posl)
 				stack = applyRule(stack, rule)
 				applied = true
 				break
+			} else {
+				fmt.Printf("Невозможно применить правило: %s -> %v к стеку\n", rule.Svertka, rule.Posl)
 			}
 		}
 
 		if !applied {
-			fmt.Println("Error: could not apply any rule.")
-			return "error", nil
+			fmt.Println("Ошибка: невозможно применить ни одно правило.")
+			fmt.Println("Текущий стек:", stack)
+			return "ошибка", nil
 		}
 	}
 
 	return stack[0].Type, stack[0]
 }
 
-// canApplyRule checks if a rule can be applied to the current stack
+// canApplyRule проверяет, может ли правило быть применено к текущему стеку
 func canApplyRule(stack []*Node, rule Rule) bool {
 	if len(rule.Posl) > len(stack) {
 		return false
 	}
 
 	for i, symbol := range rule.Posl {
-		if symbol != stack[len(stack)-len(rule.Posl)+i].Type {
+		stackIndex := len(stack) - len(rule.Posl) + i
+		if symbol != stack[stackIndex].Type {
+			fmt.Printf("Несоответствие правила: символ правила %s, символ стека %s в индексе %d стека\n", symbol, stack[stackIndex].Type, stackIndex)
 			return false
 		}
 	}
@@ -110,38 +120,38 @@ func canApplyRule(stack []*Node, rule Rule) bool {
 	return true
 }
 
-// applyRule applies a grammar rule to the current stack
+// applyRule применяет правило грамматики к текущему стеку
 func applyRule(stack []*Node, rule Rule) []*Node {
 	newNode := &Node{Type: rule.Svertka, Lexem: "", Children: []*Node{}}
 	stackSize := len(stack)
 
-	// Add the children to the new node in reverse order (to maintain the correct sequence)
-	for i := len(rule.Posl) - 1; i >= 0; i-- {
-		newNode.Children = append([]*Node{stack[stackSize-len(rule.Posl)+i]}, newNode.Children...)
+	// Добавление дочерних элементов к новому узлу в правильном порядке
+	for i := 0; i < len(rule.Posl); i++ {
+		newNode.Children = append(newNode.Children, stack[stackSize-len(rule.Posl)+i])
 	}
 
-	// Remove the matched elements from the stack
+	// Удаление соответствующих элементов из стека
 	stack = stack[:stackSize-len(rule.Posl)]
 
-	// Add the new node to the stack
+	// Добавление нового узла в стек
 	stack = append(stack, newNode)
 
-	fmt.Printf("New stack size: %d\n", len(stack))
+	fmt.Printf("Новый размер стека: %d\n", len(stack))
 	printStack(stack)
 
 	return stack
 }
 
-// printStack prints the current stack for debugging purposes
+// printStack выводит текущий стек для отладки
 func printStack(stack []*Node) {
-	fmt.Print("Current stack: [ ")
+	fmt.Print("Текущий стек: [ ")
 	for _, node := range stack {
 		fmt.Printf("{%s, %s} ", node.Type, node.Lexem)
 	}
 	fmt.Println("]")
 }
 
-// saveTree function saves the parse tree to a JSON file
+// saveTree сохраняет дерево разбора в JSON файл
 func saveTree(tree *Node) {
 	jsonData, err := json.MarshalIndent(tree, "", "  ")
 	if err != nil {
