@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	lab1 "lab2/modules"
+	lab1 "lab2/modules" // Importing the lexer package from the first lab
 	"os"
 )
 
@@ -36,10 +36,8 @@ func main() {
 		{Svertka: "F", Posl: []string{"F", "+", "T"}},
 		{Svertka: "F", Posl: []string{"T"}},
 		{Svertka: "T", Posl: []string{"T", "*", "E"}},
-		{Svertka: "T", Posl: []string{"T", "/", "E"}},
 		{Svertka: "T", Posl: []string{"E"}},
 		{Svertka: "E", Posl: []string{"(", "F", ")"}},
-		{Svertka: "E", Posl: []string{"-", "(", "F", ")"}},
 		{Svertka: "E", Posl: []string{"identifier"}},
 	}
 
@@ -69,16 +67,20 @@ func hasErrors(tokens []lab1.Token) bool {
 // parse function performs parsing based on the given tokens and grammar rules
 func parse(tokens []lab1.Token, rules []Rule) (string, *Node) {
 	var stack []*Node
-	index := 0
 
-	for index < len(tokens) {
-		token := tokens[index]
+	// Push all tokens to the stack
+	for _, token := range tokens {
+		stack = append(stack, &Node{Type: token.Type, Lexem: token.Value})
+	}
 
-		// Try to apply rules
+	// Apply rules until the stack contains only one element
+	for len(stack) > 1 {
 		applied := false
+
 		for _, rule := range rules {
-			if canApplyRule(token, rule) {
-				stack = applyRule(rule, stack, tokens, &index)
+			if canApplyRule(stack, rule) {
+				fmt.Printf("Applying rule: %s -> %v\n", rule.Svertka, rule.Posl)
+				stack = applyRule(stack, rule)
 				applied = true
 				break
 			}
@@ -90,35 +92,53 @@ func parse(tokens []lab1.Token, rules []Rule) (string, *Node) {
 		}
 	}
 
-	if len(stack) != 1 {
-		fmt.Println("Error: invalid parse tree.")
-		return "error", nil
-	}
-
 	return stack[0].Type, stack[0]
 }
 
-// canApplyRule checks if a rule can be applied to the current token and tokens sequence
-func canApplyRule(token lab1.Token, rule Rule) bool {
-	return rule.Posl[0] == token.Type
-}
+// canApplyRule checks if a rule can be applied to the current stack
+func canApplyRule(stack []*Node, rule Rule) bool {
+	if len(rule.Posl) > len(stack) {
+		return false
+	}
 
-// applyRule applies a grammar rule to the current token and tokens sequence
-func applyRule(rule Rule, stack []*Node, tokens []lab1.Token, index *int) []*Node {
-	newNode := &Node{Type: rule.Svertka, Lexem: "", Children: []*Node{}}
-
-	for _, symbol := range rule.Posl {
-		if symbol == tokens[*index].Type {
-			newNode.Children = append(newNode.Children, &Node{Type: tokens[*index].Type, Lexem: tokens[*index].Value})
-			*index++
-		} else {
-			newNode.Children = append(newNode.Children, stack[len(stack)-1])
-			stack = stack[:len(stack)-1]
+	for i, symbol := range rule.Posl {
+		if symbol != stack[len(stack)-len(rule.Posl)+i].Type {
+			return false
 		}
 	}
 
+	return true
+}
+
+// applyRule applies a grammar rule to the current stack
+func applyRule(stack []*Node, rule Rule) []*Node {
+	newNode := &Node{Type: rule.Svertka, Lexem: "", Children: []*Node{}}
+	stackSize := len(stack)
+
+	// Add the children to the new node in reverse order (to maintain the correct sequence)
+	for i := len(rule.Posl) - 1; i >= 0; i-- {
+		newNode.Children = append([]*Node{stack[stackSize-len(rule.Posl)+i]}, newNode.Children...)
+	}
+
+	// Remove the matched elements from the stack
+	stack = stack[:stackSize-len(rule.Posl)]
+
+	// Add the new node to the stack
 	stack = append(stack, newNode)
+
+	fmt.Printf("New stack size: %d\n", len(stack))
+	printStack(stack)
+
 	return stack
+}
+
+// printStack prints the current stack for debugging purposes
+func printStack(stack []*Node) {
+	fmt.Print("Current stack: [ ")
+	for _, node := range stack {
+		fmt.Printf("{%s, %s} ", node.Type, node.Lexem)
+	}
+	fmt.Println("]")
 }
 
 // saveTree function saves the parse tree to a JSON file
