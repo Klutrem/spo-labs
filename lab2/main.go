@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	lab1 "lab2/modules" // Importing the lexer package from the first lab
+	lab1 "lab2/modules"
+	"os"
 )
 
 // Rule represents a production rule in the grammar
@@ -13,44 +13,38 @@ type Rule struct {
 	Posl    []string // The production sequence
 }
 
+// Node represents a node in the parse tree
+type Node struct {
+	Type     string // NonTerminal or Terminal
+	Lexem    string // Lexeme value
+	Children []*Node
+}
+
 func main() {
 	// Generate tokens using the lexer from the first lab
 	lexems := lab1.RunLexer()
 
-	// Convert tokens to the required format
-	var ArrayLexems []lab1.Token
-	for _, it := range lexems {
-		if it.Type == "number" {
-			ArrayLexems = append(ArrayLexems, lab1.Token{Type: "identifier", Value: it.Value})
-		} else {
-			ArrayLexems = append(ArrayLexems, it)
-		}
-	}
-
 	// Check for lexer errors
-	if hasErrors(ArrayLexems) {
+	if hasErrors(lexems) {
 		fmt.Println("Lexer encountered errors.")
 		return
 	}
 
 	// Define grammar rules
 	rules := []Rule{
-		{Svertka: "E", Posl: []string{"identifier"}},
-		{Svertka: "E", Posl: []string{"arithmetic", "l_bracket", "F", "r_bracket"}},
-		{Svertka: "E", Posl: []string{"arithmetic", "l_bracket", "identifier", "r_bracket"}},
-		{Svertka: "E", Posl: []string{"l_bracket", "identifier", "r_bracket"}},
-		{Svertka: "E", Posl: []string{"l_bracket", "F", "r_bracket"}},
-		{Svertka: "T", Posl: []string{"T", "arithmetic", "E"}},
-		{Svertka: "T", Posl: []string{"E"}},
-		{Svertka: "F", Posl: []string{"identifier", "arithmetic", "identifier"}},
-		{Svertka: "F", Posl: []string{"F", "arithmetic", "T"}},
+		{Svertka: "S", Posl: []string{"identifier", ":=", "F"}},
+		{Svertka: "F", Posl: []string{"F", "+", "T"}},
 		{Svertka: "F", Posl: []string{"T"}},
-		{Svertka: "S", Posl: []string{"F", "operator", "identifier", "delimiter"}},
-		{Svertka: "S", Posl: []string{"F", "operator", "F", "delimiter"}},
+		{Svertka: "T", Posl: []string{"T", "*", "E"}},
+		{Svertka: "T", Posl: []string{"T", "/", "E"}},
+		{Svertka: "T", Posl: []string{"E"}},
+		{Svertka: "E", Posl: []string{"(", "F", ")"}},
+		{Svertka: "E", Posl: []string{"-", "(", "F", ")"}},
+		{Svertka: "E", Posl: []string{"identifier"}},
 	}
 
 	// Perform parsing
-	svertka, tree := parse(ArrayLexems, rules)
+	svertka, tree := parse(lexems, rules)
 
 	// Print the result
 	fmt.Println("Свертка:", svertka)
@@ -65,7 +59,7 @@ func main() {
 // hasErrors checks if lexer encountered errors
 func hasErrors(tokens []lab1.Token) bool {
 	for _, token := range tokens {
-		if token.Type == "error" {
+		if token.Type == lab1.ErrorType {
 			return true
 		}
 	}
@@ -74,14 +68,57 @@ func hasErrors(tokens []lab1.Token) bool {
 
 // parse function performs parsing based on the given tokens and grammar rules
 func parse(tokens []lab1.Token, rules []Rule) (string, *Node) {
-	return "", nil
+	var stack []*Node
+	index := 0
+
+	for index < len(tokens) {
+		token := tokens[index]
+
+		// Try to apply rules
+		applied := false
+		for _, rule := range rules {
+			if canApplyRule(token, rule) {
+				stack = applyRule(rule, stack, tokens, &index)
+				applied = true
+				break
+			}
+		}
+
+		if !applied {
+			fmt.Println("Error: could not apply any rule.")
+			return "error", nil
+		}
+	}
+
+	if len(stack) != 1 {
+		fmt.Println("Error: invalid parse tree.")
+		return "error", nil
+	}
+
+	return stack[0].Type, stack[0]
 }
 
-// Node represents a node in the parse tree
-type Node struct {
-	Type     string // NonTerminal or Terminal
-	Lexem    string // Lexeme value
-	Children []*Node
+// canApplyRule checks if a rule can be applied to the current token and tokens sequence
+func canApplyRule(token lab1.Token, rule Rule) bool {
+	return rule.Posl[0] == token.Type
+}
+
+// applyRule applies a grammar rule to the current token and tokens sequence
+func applyRule(rule Rule, stack []*Node, tokens []lab1.Token, index *int) []*Node {
+	newNode := &Node{Type: rule.Svertka, Lexem: "", Children: []*Node{}}
+
+	for _, symbol := range rule.Posl {
+		if symbol == tokens[*index].Type {
+			newNode.Children = append(newNode.Children, &Node{Type: tokens[*index].Type, Lexem: tokens[*index].Value})
+			*index++
+		} else {
+			newNode.Children = append(newNode.Children, stack[len(stack)-1])
+			stack = stack[:len(stack)-1]
+		}
+	}
+
+	stack = append(stack, newNode)
+	return stack
 }
 
 // saveTree function saves the parse tree to a JSON file
@@ -92,7 +129,7 @@ func saveTree(tree *Node) {
 		return
 	}
 
-	err = ioutil.WriteFile("Tree.json", jsonData, 0644)
+	err = os.WriteFile("Tree.json", jsonData, 0644)
 	if err != nil {
 		fmt.Println("Error writing to file:", err)
 		return
