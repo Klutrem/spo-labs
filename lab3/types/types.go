@@ -11,6 +11,6 @@ const (
 )
 
 const (
-	Terminal    = "terminal"
+	Terminal    = "Terminal"
 	NonTerminal = "NonTerminal"
 )
