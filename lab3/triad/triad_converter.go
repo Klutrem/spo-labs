@@ -76,7 +76,7 @@ func ConvertExpressionToTriad(nodeToConvert node.Node, triads *[]Triad) Triad {
 
 func ConvertToOperand(n node.Node, triads *[]Triad) Operand {
 	var o Operand
-	if n.IsSimple() {
+	if n.IsSimple() && n.IsTerminal() {
 		o = OperandFromSimpleNode(n)
 	} else {
 		o = ConvertNodeToTriads(n, triads)
