@@ -14,7 +14,7 @@ import (
 func main() {
 	var nodes []node.Node
 	// читаем файл, сгенерированный алгоритмом из прошлых ЛР
-	fileData, err := os.ReadFile("../output.json")
+	fileData, err := os.ReadFile("../same.json")
 	if err != nil {
 		log.Fatalf("Ошибка при чтении файла: %v", err)
 	}
@@ -49,6 +49,10 @@ func main() {
 	println("триады после оптимизации:")
 	optimizer.OptimizeTriads(&resultTriads)
 	printTriads(resultTriads)
+
+	println("Код после оптимизации:")
+	res = code_generation.GenerateAssemblyCode(resultTriads)
+	println(res)
 
 }
 

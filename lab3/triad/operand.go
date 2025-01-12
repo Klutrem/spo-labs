@@ -36,6 +36,10 @@ func (o Operand) GetLink() *int {
 	return o.linkTo
 }
 
+func (o Operand) SetLink(link int) {
+	o.linkTo = &link
+}
+
 func OperandFromString(s string) Operand {
 	return Operand{
 		element: s,
