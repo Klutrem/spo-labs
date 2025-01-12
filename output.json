@@ -1,0 +1,228 @@
+[
+  {
+    "type": "NonTerminal",
+    "lexem": "a := 2",
+    "children": [
+      {
+        "type": "Terminal",
+        "lexem": "a"
+      },
+      {
+        "type": "Terminal",
+        "lexem": ":="
+      },
+      {
+        "type": "Terminal",
+        "lexem": "2"
+      }
+    ]
+  },
+  {
+    "type": "NonTerminal",
+    "lexem": "a := 1 + 3;",
+    "children": [
+      {
+        "type": "Terminal",
+        "lexem": "a"
+      },
+      {
+        "type": "Terminal",
+        "lexem": ":="
+      },
+      {
+        "type": "NonTerminal",
+        "lexem": "1 + 3",
+        "children": [
+          {
+            "type": "Terminal",
+            "lexem": "1"
+          },
+          {
+            "type": "Terminal",
+            "lexem": "+"
+          },
+          {
+            "type": "Terminal",
+            "lexem": "3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "NonTerminal",
+    "lexem": "b := 3",
+    "children": [
+      {
+        "type": "Terminal",
+        "lexem": "b"
+      },
+      {
+        "type": "Terminal",
+        "lexem": ":="
+      },
+      {
+        "type": "Terminal",
+        "lexem": "3"
+      }
+    ]
+  },
+  {
+    "type": "NonTerminal",
+    "lexem": "c := 1",
+    "children": [
+      {
+        "type": "Terminal",
+        "lexem": "c"
+      },
+      {
+        "type": "Terminal",
+        "lexem": ":="
+      },
+      {
+        "type": "Terminal",
+        "lexem": "1"
+      }
+    ]
+  },
+  {
+    "type": "NonTerminal",
+    "lexem": "a := (a + a) * a;",
+    "children": [
+      {
+        "type": "NonTerminal",
+        "lexem": "a := (a + a) * a",
+        "children": [
+          {
+            "type": "Terminal",
+            "lexem": "a"
+          },
+          {
+            "type": "Terminal",
+            "lexem": ":="
+          },
+          {
+            "type": "NonTerminal",
+            "lexem": "(a + a) * a",
+            "children": [
+              {
+                "type": "NonTerminal",
+                "lexem": "(a + a)",
+                "children": [
+                  {
+                    "type": "Terminal",
+                    "lexem": "("
+                  },
+                  {
+                    "type": "NonTerminal",
+                    "lexem": "a + a",
+                    "children": [
+                      {
+                        "type": "Terminal",
+                        "lexem": "a"
+                      },
+                      {
+                        "type": "Terminal",
+                        "lexem": "+"
+                      },
+                      {
+                        "type": "Terminal",
+                        "lexem": "a"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Terminal",
+                    "lexem": ")"
+                  }
+                ]
+              },
+              {
+                "type": "Terminal",
+                "lexem": "*"
+              },
+              {
+                "type": "Terminal",
+                "lexem": "a"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Terminal",
+        "lexem": ";"
+      }
+    ]
+  },
+  {
+    "type": "NonTerminal",
+    "lexem": "d := (b - c) / 2;",
+    "children": [
+      {
+        "type": "NonTerminal",
+        "lexem": "d := (b - c) / 2",
+        "children": [
+          {
+            "type": "Terminal",
+            "lexem": "d"
+          },
+          {
+            "type": "Terminal",
+            "lexem": ":="
+          },
+          {
+            "type": "NonTerminal",
+            "lexem": "(b - c) / 2",
+            "children": [
+              {
+                "type": "NonTerminal",
+                "lexem": "(b - c)",
+                "children": [
+                  {
+                    "type": "Terminal",
+                    "lexem": "("
+                  },
+                  {
+                    "type": "NonTerminal",
+                    "lexem": "b - c",
+                    "children": [
+                      {
+                        "type": "Terminal",
+                        "lexem": "b"
+                      },
+                      {
+                        "type": "Terminal",
+                        "lexem": "-"
+                      },
+                      {
+                        "type": "Terminal",
+                        "lexem": "c"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Terminal",
+                    "lexem": ")"
+                  }
+                ]
+              },
+              {
+                "type": "Terminal",
+                "lexem": "/"
+              },
+              {
+                "type": "Terminal",
+                "lexem": "2"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Terminal",
+        "lexem": ";"
+      }
+    ]
+  }
+]

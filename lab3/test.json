@@ -1,0 +1,72 @@
+[
+    {
+        "type": "NonTerminal",
+        "lexem": "a := (a + a) * a;",
+        "children": [
+            {
+                "type": "NonTerminal",
+                "lexem": "a := (a + a) * a",
+                "children": [
+                    {
+                        "type": "Terminal",
+                        "lexem": "a"
+                    },
+                    {
+                        "type": "Terminal",
+                        "lexem": ":="
+                    },
+                    {
+                        "type": "NonTerminal",
+                        "lexem": "(a + a) * a",
+                        "children": [
+                            {
+                                "type": "NonTerminal",
+                                "lexem": "(a + a)",
+                                "children": [
+                                    {
+                                        "type": "Terminal",
+                                        "lexem": "("
+                                    },
+                                    {
+                                        "type": "NonTerminal",
+                                        "lexem": "a + a",
+                                        "children": [
+                                            {
+                                                "type": "Terminal",
+                                                "lexem": "a"
+                                            },
+                                            {
+                                                "type": "Terminal",
+                                                "lexem": "+"
+                                            },
+                                            {
+                                                "type": "Terminal",
+                                                "lexem": "a"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "Terminal",
+                                        "lexem": ")"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "Terminal",
+                                "lexem": "*"
+                            },
+                            {
+                                "type": "Terminal",
+                                "lexem": "a"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "type": "Terminal",
+                "lexem": ";"
+            }
+        ]
+    }
+]

@@ -1,0 +1,186 @@
+[
+    {
+        "type": "NonTerminal",
+        "lexem": "D := D + C*B",
+        "children": [
+            {
+                "type": "Terminal",
+                "lexem": "D"
+            },
+            {
+                "type": "Terminal",
+                "lexem": ":="
+            },
+            {
+                "type": "NonTerminal",
+                "lexem": "D + C*B",
+                "children": [
+                    {
+                        "type": "Terminal",
+                        "lexem": "D"
+                    },
+                    {
+                        "type": "Terminal",
+                        "lexem": "+"
+                    },
+                    {
+                        "type": "NonTerminal",
+                        "lexem": "C*B",
+                        "children": [
+                            {
+                                "type": "Terminal",
+                                "lexem": "C"
+                            },
+                            {
+                                "type": "Terminal",
+                                "lexem": "*"
+                            },
+                            {
+                                "type": "Terminal",
+                                "lexem": "B"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": "NonTerminal",
+        "lexem": "A := D + C*B",
+        "children": [
+            {
+                "type": "Terminal",
+                "lexem": "A"
+            },
+            {
+                "type": "Terminal",
+                "lexem": ":="
+            },
+            {
+                "type": "NonTerminal",
+                "lexem": "D + C*B",
+                "children": [
+                    {
+                        "type": "Terminal",
+                        "lexem": "D"
+                    },
+                    {
+                        "type": "Terminal",
+                        "lexem": "+"
+                    },
+                    {
+                        "type": "NonTerminal",
+                        "lexem": "C*B",
+                        "children": [
+                            {
+                                "type": "Terminal",
+                                "lexem": "C"
+                            },
+                            {
+                                "type": "Terminal",
+                                "lexem": "*"
+                            },
+                            {
+                                "type": "Terminal",
+                                "lexem": "B"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": "NonTerminal",
+        "lexem": "C := D + C*B",
+        "children": [
+            {
+                "type": "Terminal",
+                "lexem": "C"
+            },
+            {
+                "type": "Terminal",
+                "lexem": ":="
+            },
+            {
+                "type": "NonTerminal",
+                "lexem": "D + C*B",
+                "children": [
+                    {
+                        "type": "Terminal",
+                        "lexem": "D"
+                    },
+                    {
+                        "type": "Terminal",
+                        "lexem": "+"
+                    },
+                    {
+                        "type": "NonTerminal",
+                        "lexem": "C*B",
+                        "children": [
+                            {
+                                "type": "Terminal",
+                                "lexem": "C"
+                            },
+                            {
+                                "type": "Terminal",
+                                "lexem": "*"
+                            },
+                            {
+                                "type": "Terminal",
+                                "lexem": "B"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "type": "NonTerminal",
+        "lexem": "F := D + C*B",
+        "children": [
+            {
+                "type": "Terminal",
+                "lexem": "F"
+            },
+            {
+                "type": "Terminal",
+                "lexem": ":="
+            },
+            {
+                "type": "NonTerminal",
+                "lexem": "D + C*B",
+                "children": [
+                    {
+                        "type": "Terminal",
+                        "lexem": "D"
+                    },
+                    {
+                        "type": "Terminal",
+                        "lexem": "+"
+                    },
+                    {
+                        "type": "NonTerminal",
+                        "lexem": "C*B",
+                        "children": [
+                            {
+                                "type": "Terminal",
+                                "lexem": "C"
+                            },
+                            {
+                                "type": "Terminal",
+                                "lexem": "*"
+                            },
+                            {
+                                "type": "Terminal",
+                                "lexem": "B"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
