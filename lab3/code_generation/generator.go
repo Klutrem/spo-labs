@@ -42,11 +42,11 @@ func GenerateAssemblyCode(triads []triad.Triad) string {
 
 		case ":=":
 			// Присваивание: :=(A, операнд)
-			assemblyCode.WriteString(fmt.Sprintf("mov %s,%s\n", operand1, operand2))
+			assemblyCode.WriteString(fmt.Sprintf("mov %s, %s\n", operand1, operand2))
 
+			// Сохраняем результат присваивания
+			updatedLinkOperands[i] = operand1
 		default:
-			// Для других операций добавьте соответствующую обработку
-			// Например, если оператор "==", ">", "<", можно добавить соответствующую реализацию
 			assemblyCode.WriteString(fmt.Sprintf("Unknown operator: %s\n", triad.Operator))
 		}
 	}
@@ -56,14 +56,14 @@ func GenerateAssemblyCode(triads []triad.Triad) string {
 
 func operandToString(o triad.Operand, index int, triads []triad.Triad) string {
 	if o.IsLink() {
-		if index > 0 {
-			if linkedOperand, ok := updatedLinkOperands[*o.GetLink()-1]; ok {
-				return linkedOperand
-			}
-			linkedOperand := triads[*o.GetLink()-1].Operand1.GetOperand()
-			updatedLinkOperands[index] = linkedOperand
+		// Проверяем, есть ли результат в `updatedLinkOperands`
+		if linkedOperand, ok := updatedLinkOperands[*o.GetLink()]; ok {
 			return linkedOperand
 		}
+
+		// Если результат не найден, возвращаем операнд из ссылки
+		return triads[*o.GetLink()-1].Operand1.GetOperand()
 	}
+
 	return o.GetOperand()
 }
