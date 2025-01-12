@@ -129,6 +129,8 @@ func removeSameTriads(triads *[]triad.Triad) {
 
 		// Добавляем триаду в итоговый результат
 		result = append(result, t)
+		// Обновляем ссылки для всех триад, ссылающихся на эту
+		linkUpdates[i+1] = len(result)
 	}
 
 	*triads = result
