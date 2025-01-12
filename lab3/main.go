@@ -42,16 +42,16 @@ func main() {
 
 	resultTriads := triad.MergeTriadList(doubleTriads...)
 	printTriads(resultTriads)
-	println("Код до оптимизации:")
-	res := code_generation.GenerateAssemblyCode(resultTriads)
-	println(res)
+	// println("Код до оптимизации:")
+	// res := code_generation.GenerateAssemblyCode(resultTriads)
+	// println(res)
 
 	println("триады после оптимизации:")
 	optimizer.OptimizeTriads(&resultTriads)
 	printTriads(resultTriads)
 
 	println("Код после оптимизации:")
-	res = code_generation.GenerateAssemblyCode(resultTriads)
+	res := code_generation.GenerateAssemblyCode(resultTriads)
 	println(res)
 
 }

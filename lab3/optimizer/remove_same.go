@@ -4,11 +4,12 @@ import (
 	"lab1_2/triad"
 )
 
+var depTriads []int // хранит зависимости для каждой триады
 // Основной алгоритм исключения лишних операций
 func eliminateRedundantOperations(triads []triad.Triad) []triad.Triad {
-	dep := make(map[string]int)           // хранит зависимости переменных
-	depTriads := make([]int, len(triads)) // хранит зависимости для каждой триады
-	result := []triad.Triad{}             // итоговый результат
+	dep := make(map[string]int) // хранит зависимости переменных
+	result := []triad.Triad{}   // итоговый результат
+	depTriads = make([]int, len(triads))
 
 	for i, t := range triads {
 		// Шаг 1: Замена операндов, ссылающихся на SAME
@@ -43,21 +44,14 @@ func eliminateRedundantOperations(triads []triad.Triad) []triad.Triad {
 		depTriads[i] = 1 + max(calcDependency(t.Operand1, dep), calcDependency(t.Operand2, dep))
 
 		// Шаг 3: Проверка на идентичность с более ранней триадой
-		redundant := false
-		for j := 0; j < i; j++ {
-			if depTriads[i] == depTriads[j] && triads[i] == triads[j] {
-				redundant = true
-				result = append(result, triad.Triad{
-					Operator: "SAME",
-					Operand1: triad.LinkOperand(j + 1), // Ссылка на триаду с номером i
-					Operand2: triad.NumberOperand(0),
-				})
-				break
-			}
-		}
-
-		if !redundant {
-			// Заменяем текущую триаду на SAME(j, 0)
+		redundant, j := checkIfRedundant(t, triads, i)
+		if redundant {
+			result = append(result, triad.Triad{
+				Operator: "SAME",
+				Operand1: triad.LinkOperand(j + 1), // Ссылка на триаду с номером i
+				Operand2: triad.NumberOperand(0),
+			})
+		} else {
 			result = append(result, t)
 
 		}
@@ -81,6 +75,15 @@ func calcDependency(operand triad.Operand, dep map[string]int) int {
 	return 0
 }
 
+func checkIfRedundant(t triad.Triad, triads []triad.Triad, index int) (bool, int) {
+	for j, tr := range triads {
+		if depTriads[index] == depTriads[j] && t.Equals(tr) && j < index {
+			return true, j
+		}
+	}
+	return false, 0
+}
+
 // Вспомогательная функция для поиска максимума
 func max(a, b int) int {
 	if a > b {
@@ -92,7 +95,7 @@ func max(a, b int) int {
 // Функция для удаления всех SAME триад и обновления ссылок
 func removeSameTriads(triads *[]triad.Triad) {
 	var result []triad.Triad
-	// Массив для отслеживания замененных ссылок
+	// Мапа для отслеживания замененных ссылок
 	// Ключ - это индекс операнда, который ссылается на SAME триаду, а значение - индекс, на который нужно обновить ссылку
 	linkUpdates := make(map[int]int)
 
@@ -127,10 +130,17 @@ func removeSameTriads(triads *[]triad.Triad) {
 			}
 		}
 
-		// Добавляем триаду в итоговый результат
-		result = append(result, t)
-		// Обновляем ссылки для всех триад, ссылающихся на эту
-		linkUpdates[i+1] = len(result)
+		if redundant, j := checkIfRedundant(t, result, i); !redundant {
+			// Добавляем триаду в итоговый результат
+			result = append(result, t)
+			depTriads[len(result)-1] = depTriads[i]
+
+			// Обновляем ссылки для всех триад, ссылающихся на эту
+			linkUpdates[i+1] = len(result)
+		} else {
+			linkUpdates[i+1] = j + 1
+		}
+
 	}
 
 	*triads = result

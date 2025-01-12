@@ -12,6 +12,10 @@ func (t Triad) ToString() string {
 	return fmt.Sprintf("%s(%s, %s)", t.Operator, t.Operand1.GetOperand(), t.Operand2.GetOperand())
 }
 
+func (t Triad) Equals(tr Triad) bool {
+	return t.Operand1.GetOperand() == tr.Operand1.GetOperand() && t.Operand2.GetOperand() == tr.Operand2.GetOperand() && t.Operator == tr.Operator
+}
+
 // MergeTriadList объединяет несколько списков триад и корректирует ссылки
 func MergeTriadList(triadsList ...[]Triad) []Triad {
 	var outputTriads []Triad
