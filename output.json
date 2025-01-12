@@ -1,6 +1,24 @@
 [
   {
     "type": "NonTerminal",
+    "lexem": "a := 2",
+    "children": [
+      {
+        "type": "Terminal",
+        "lexem": "a"
+      },
+      {
+        "type": "Terminal",
+        "lexem": ":="
+      },
+      {
+        "type": "Terminal",
+        "lexem": "2"
+      }
+    ]
+  },
+  {
+    "type": "NonTerminal",
     "lexem": "a := 1 + 3;",
     "children": [
       {
