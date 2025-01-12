@@ -2,18 +2,30 @@ package triad
 
 import "fmt"
 
+// Triad представляет триаду, которая состоит из:
+// - Оператора (например, "+", "-", "*" и т.д.)
+// - Двух операндов (Operand1 и Operand2), которые являются входными значениями для операции
 type Triad struct {
-	Operator string  // Операнд (результат операции)
-	Operand1 Operand // Первый операнд (операнды для операции)
-	Operand2 Operand // Второй операнд (операнды для операции)
+	Operator string  // Оператор, выполняющий операцию
+	Operand1 Operand // Первый операнд (входное значение 1)
+	Operand2 Operand // Второй операнд (входное значение 2)
 }
 
+// ToString возвращает строковое представление триады в формате:
+// "Оператор(Операнд1, Операнд2)"
 func (t Triad) ToString() string {
 	return fmt.Sprintf("%s(%s, %s)", t.Operator, t.Operand1.GetOperand(), t.Operand2.GetOperand())
 }
 
+// Equals проверяет равенство двух триад. Две триады считаются равными, если:
+// - Их операторы совпадают
+// - Оба операнда совпадают по значениям
+// Не обойтись простым сравнением структур, поскольку в операндах используются ссылки
+// и при сравнении они могут ссылаться на разные адреса в памяти
 func (t Triad) Equals(tr Triad) bool {
-	return t.Operand1.GetOperand() == tr.Operand1.GetOperand() && t.Operand2.GetOperand() == tr.Operand2.GetOperand() && t.Operator == tr.Operator
+	return t.Operand1.GetOperand() == tr.Operand1.GetOperand() &&
+		t.Operand2.GetOperand() == tr.Operand2.GetOperand() &&
+		t.Operator == tr.Operator
 }
 
 // MergeTriadList объединяет несколько списков триад и корректирует ссылки

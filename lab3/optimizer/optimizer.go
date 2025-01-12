@@ -14,7 +14,10 @@ func OptimizeTriads(triads *[]triad.Triad) {
 		// Пробуем свертку для текущей триады
 		countValueIfPossible(triad, index, triads)
 	}
+	// удаляем триады с константами
 	removeRedundantTriadsWithConstants(triads)
+	// определяем same триады
 	*triads = eliminateRedundantOperations(*triads)
+	// удяляем same триады
 	removeSameTriads(triads)
 }
