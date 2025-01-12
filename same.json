@@ -1,7 +1,7 @@
 [
     {
         "type": "NonTerminal",
-        "lexem": "D := D + C*B",
+        "lexem": "D := D + C*B;",
         "children": [
             {
                 "type": "Terminal",
@@ -47,7 +47,7 @@
     },
     {
         "type": "NonTerminal",
-        "lexem": "A := D + C*B",
+        "lexem": "A := D + C*B;",
         "children": [
             {
                 "type": "Terminal",
@@ -93,7 +93,7 @@
     },
     {
         "type": "NonTerminal",
-        "lexem": "C := D + C*B",
+        "lexem": "C := D + C*B;",
         "children": [
             {
                 "type": "Terminal",
@@ -134,52 +134,10 @@
                         ]
                     }
                 ]
-            }
-        ]
-    },
-    {
-        "type": "NonTerminal",
-        "lexem": "F := D + C*B",
-        "children": [
-            {
-                "type": "Terminal",
-                "lexem": "F"
             },
             {
                 "type": "Terminal",
-                "lexem": ":="
-            },
-            {
-                "type": "NonTerminal",
-                "lexem": "D + C*B",
-                "children": [
-                    {
-                        "type": "Terminal",
-                        "lexem": "D"
-                    },
-                    {
-                        "type": "Terminal",
-                        "lexem": "+"
-                    },
-                    {
-                        "type": "NonTerminal",
-                        "lexem": "C*B",
-                        "children": [
-                            {
-                                "type": "Terminal",
-                                "lexem": "C"
-                            },
-                            {
-                                "type": "Terminal",
-                                "lexem": "*"
-                            },
-                            {
-                                "type": "Terminal",
-                                "lexem": "B"
-                            }
-                        ]
-                    }
-                ]
+                "lexem": ";"
             }
         ]
     }
