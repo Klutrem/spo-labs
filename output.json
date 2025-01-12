@@ -1,7 +1,7 @@
 [
   {
     "type": "NonTerminal",
-    "lexem": "a := 2",
+    "lexem": "a := 2;",
     "children": [
       {
         "type": "Terminal",
@@ -51,7 +51,7 @@
   },
   {
     "type": "NonTerminal",
-    "lexem": "b := 3",
+    "lexem": "b := 3;",
     "children": [
       {
         "type": "Terminal",
@@ -69,7 +69,7 @@
   },
   {
     "type": "NonTerminal",
-    "lexem": "c := 1",
+    "lexem": "c := 1;",
     "children": [
       {
         "type": "Terminal",
