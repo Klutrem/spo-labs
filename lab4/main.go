@@ -1,86 +1,157 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
-	"github.com/alecthomas/repr"
 )
 
-// Определим структуры для грамматики
+// Структуры для грамматики
+
 type Program struct {
-	Type string `parser:"'type'"`
-	L    []Type `parser:"@@*"`
-	Var  string `parser:"'var'"`
-	R    []Var  `parser:"@@*"`
+	Types []*Type `@@*`
 }
 
 type Type struct {
-	T string `parser:"'t' '=' 'c' | 't' '=' 'D'"`
+	Name   string   `"type" @Ident`
+	Fields []*Field `@@*`
 }
 
-type Var struct {
-	K     string `parser:"'K'"`
-	Colon string `parser:":'c' | 't' | 'D'"`
+type Field struct {
+	VarName string `@Ident "="`
+	Expr    Expr   `@@`
 }
 
-type D struct {
-	Union string `parser:"'union'"`
-	F     []F    `parser:"@@*"`
-	End   string `parser:"'end'"`
+type Expr interface {
+	Size(alignment int) int
 }
 
-type F struct {
-	E []E `parser:"@@*"`
+type ScalarType struct {
+	Type string `@("byte" | "real")`
 }
 
-type E struct {
-	K     string `parser:"'K'"`
-	Colon string `parser:":'c' | 't'"`
-}
-
-var (
-	// Определим лексер с состояниями
-	def = lexer.MustStateful(lexer.Rules{
-		"Root": {
-			{Name: `Type`, Pattern: `type`, Action: nil},
-			{Name: `Var`, Pattern: `var`, Action: nil},
-		},
-		"Type": {
-			{Name: "T", Pattern: `t`, Action: nil},
-			{Name: "Equal", Pattern: `=`, Action: nil},
-			{Name: "C", Pattern: `c`, Action: nil},
-			{Name: "D", Pattern: `D`, Action: nil},
-		},
-		"Var": {
-			{Name: "K", Pattern: `K`, Action: nil},
-			{Name: "Colon", Pattern: `:`, Action: nil},
-			{Name: "C", Pattern: `c`, Action: nil},
-			{Name: "T", Pattern: `t`, Action: nil},
-			{Name: "D", Pattern: `D`, Action: nil},
-		},
-		"Union": {
-			{Name: "Union", Pattern: `union`, Action: nil},
-			{Name: "End", Pattern: `end`, Action: nil},
-		},
-	})
-
-	// Построим парсер
-	parser = participle.MustBuild[Program](participle.Lexer(def),
-		participle.Elide("Whitespace"))
-)
-
-func main() {
-	// Тестовая строка
-	input := `type t=c var K: t K: c`
-
-	// Парсим строку
-	pr, err := parser.ParseString("err", input)
-	if err != nil {
-		log.Fatal(err)
+func (s ScalarType) Size(alignment int) int {
+	size := 0
+	switch s.Type {
+	case "byte":
+		size = 1
+	case "real":
+		size = 6
 	}
 
-	// Печатаем результат
-	repr.Println(pr)
+	// Выравнивание
+	if size%alignment != 0 {
+		padding := alignment - (size % alignment)
+		size += padding
+	}
+	return size
+}
+
+type Union struct {
+	Fields []*UnionField `"union" @@* "end"`
+}
+
+type UnionField struct {
+	VarName string `@Ident ":"`
+	Type    string `@("byte" | "real")`
+}
+
+func (u Union) Size(alignment int) int {
+	totalSize := 0
+	for _, field := range u.Fields {
+		var fieldSize int
+		switch field.Type {
+		case "byte":
+			fieldSize = 1
+		case "real":
+			fieldSize = 6
+		}
+
+		// Выравнивание
+		if fieldSize%alignment != 0 {
+			padding := alignment - (fieldSize % alignment)
+			fieldSize += padding
+		}
+
+		totalSize += fieldSize
+	}
+	return totalSize
+}
+
+func main() {
+	// Лексер для грамматики
+	lexer := lexer.MustSimple([]lexer.SimpleRule{
+		{`Ident`, `[a-zA-Z][a-zA-Z_\d]*`},
+		{`Type`, `byte|real`},
+		{`Union`, `union`},
+		{`End`, `end`},
+		{`Punct`, `[,]`},
+		{`Whitespace`, `\s+`},
+		{`Semicolon`, `;`}, // Точка с запятой
+	})
+
+	// Парсер с использованием библиотеки participle
+	parser := participle.MustBuild[Program](
+		participle.Lexer(lexer),
+		participle.Union[Expr](ScalarType{}, Union{}),
+	)
+
+	// Пример входного текста
+	input := `
+type MyType
+  var1 = byte;
+  var2 = real;
+  var3 = union
+    var4: byte;
+    var5: real;
+  end
+
+type AnotherType
+  var6 = byte;
+`
+
+	// Вывод исходного текста
+	fmt.Println("Исходный текст:")
+	fmt.Println(input)
+
+	// Парсинг строки
+	program, err := parser.ParseString("", input)
+	if err != nil {
+		log.Fatalf("error: %s", err.Error())
+	}
+
+	// Задаем кратность выравнивания (2 байта)
+	alignment := 2
+
+	// Вывод размеров типов данных
+	fmt.Println("\nРазмеры типов данных:")
+	for _, t := range program.Types {
+		fmt.Printf("Тип '%s':\n", t.Name)
+		for _, field := range t.Fields {
+			size := field.Expr.Size(alignment)
+			fmt.Printf("  Переменная '%s': %d байт (с учетом выравнивания)\n", field.VarName, size)
+		}
+	}
+
+	// Вывод размеров объединений (если есть)
+	for _, t := range program.Types {
+		for _, field := range t.Fields {
+			if union, ok := field.Expr.(Union); ok {
+				fmt.Printf("  Объединение '%s': %d байт (с учетом выравнивания)\n", field.VarName, union.Size(alignment))
+			}
+		}
+	}
+
+	// Вычисление итогового объема памяти
+	var totalSize int
+	for _, t := range program.Types {
+		for _, field := range t.Fields {
+			totalSize += field.Expr.Size(alignment)
+		}
+	}
+
+	// Итоговый объем памяти
+	fmt.Printf("\nИтоговый объем памяти: %d байт (с учетом выравнивания)\n", totalSize)
 }
