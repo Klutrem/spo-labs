@@ -2,56 +2,8 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/alecthomas/participle/v2"
-	"github.com/alecthomas/participle/v2/lexer"
-)
-
-type Program struct {
-	Pos lexer.Position
-
-	Types []*TypeDeclaration `@@*`
-	Vars  []*VarDeclaration  `@@*`
-}
-
-type TypeDeclaration struct {
-	Pos lexer.Position
-
-	TypeKeyword string   `"type"`
-	Name        string   `@Ident`
-	Fields      []*Field `"{" @@* "}"`
-}
-
-type VarDeclaration struct {
-	Pos lexer.Position
-
-	VarKeyword string `"var"`
-	Name       string `@Ident`
-	Type       string `"=" @Ident ";"`
-}
-
-type Field struct {
-	Pos lexer.Position
-
-	Name string `@Ident`
-	Type string `":" @("byte" | "real") ";"`
-}
-
-var (
-	lex = lexer.MustSimple([]lexer.SimpleRule{
-		{"comment", `//.*|/\*.*?\*/`},
-		{"whitespace", `\s+`},
-
-		{"TypeKeyword", `\btype\b`},
-		{"VarKeyword", `\bvar\b`},
-		{"Ident", `[a-zA-Z_][a-zA-Z0-9_]*`},
-		{"Punct", `[-,(){}=;:]`},
-		{"Literal", `\b(byte|real)\b`},
-	})
-	parser = participle.MustBuild[Program](
-		participle.Lexer(lex),
-		participle.UseLookahead(2),
-	)
+	"io/ioutil"
+	"os"
 )
 
 const (
@@ -86,32 +38,28 @@ func calculateVariableSize(varDecl *VarDeclaration, types map[string]int) int {
 }
 
 func main() {
-	const sample = `
-type MyType {
-    field1 : byte;
-    field2 : real;
-}
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: go run main.go <filename>")
+		return
+	}
 
-type AnotherType {
-    field3 : real;
-    field4 : byte;
-}
+	filename := os.Args[1]
 
-var var1 = MyType;
-var var2 = AnotherType;
-var var3 = byte;
-var var4 = real;
-`
+	// Чтение файла
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to read file: %s", err))
+	}
 
 	// Парсинг входного текста
-	ast, err := parser.ParseString("", sample)
+	ast, err := Parser.ParseString("", string(data))
 	if err != nil {
 		panic(err)
 	}
 
 	// Вывод исходного текста
 	fmt.Println("Исходный текст:")
-	fmt.Println(sample)
+	fmt.Println(string(data))
 
 	// Расчет размеров типов
 	types := map[string]int{

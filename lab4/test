@@ -1,0 +1,14 @@
+type MyType {
+    field1 : byte;
+    field2 : real;
+}
+
+type AnotherType {
+    field3 : real;
+    field4 : byte;
+}
+
+var var1 = MyType;
+var var2 = AnotherType;
+var var3 = byte;
+var var4 = real;
