@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"lab1_2/code_generation"
 	"lab1_2/node"
+	"lab1_2/optimizer"
 	"lab1_2/triad"
 	"log"
 	"os"
@@ -40,10 +41,19 @@ func main() {
 	}
 
 	resultTriads := triad.MergeTriadList(doubleTriads...)
-	for i, t := range resultTriads {
-		fmt.Printf("%d: %s\n", i+1, t.ToString())
-	}
+	printTriads(resultTriads)
 	println("Код до оптимизации:")
 	res := code_generation.GenerateAssemblyCode(resultTriads)
 	println(res)
+
+	println("триады после оптимизации:")
+	optimizer.OptimizeTriads(&resultTriads)
+	printTriads(resultTriads)
+
+}
+
+func printTriads(triads []triad.Triad) {
+	for i, t := range triads {
+		fmt.Printf("%d: %s\n", i+1, t.ToString())
+	}
 }
