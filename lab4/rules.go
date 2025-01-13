@@ -19,10 +19,10 @@ type Program struct {
 type TypeDeclaration struct {
 	Pos lexer.Position // Позиция типа в исходном файле.
 
-	TypeKeyword string   `"type"` // Ключевое слово "type", обязательное для определения типа.
-	Name        string   `@Ident` // Имя типа данных.
-	Fields      []*Field `"{" @@* "}"`
-	// Список полей типа данных, которые могут быть разных типов.
+	TypeKeyword string `"type"`     // Ключевое слово "type", обязательное для определения типа.
+	Name        string `@Ident "="` // Имя типа данных.
+
+	Fields []*Field `"record" @@* "end"` // Список полей типа данных, которые могут быть разных типов.
 }
 
 // VarDeclaration описывает объявление переменной.
@@ -30,10 +30,9 @@ type TypeDeclaration struct {
 type VarDeclaration struct {
 	Pos lexer.Position // Позиция переменной в исходном файле.
 
-	VarKeyword string `"var"`  // Ключевое слово "var", обязательное для объявления переменной.
-	Name       string `@Ident` // Имя переменной.
-	Type       string `"=" @Ident ";"`
-	// Тип переменной, присваиваемый через знак "=".
+	VarKeyword string `"var"`          // Ключевое слово "var", обязательное для объявления переменной.
+	Name       string `@Ident`         // Имя переменной.
+	Type       string `":" @Ident ";"` // Тип переменной, присваиваемый через знак "=".
 }
 
 // Field описывает поле внутри типа данных (например, внутри структуры).
@@ -41,9 +40,8 @@ type VarDeclaration struct {
 type Field struct {
 	Pos lexer.Position // Позиция поля в исходном файле.
 
-	Name string `@Ident` // Имя поля.
-	Type string `":" @("byte" | "real") ";"`
-	// Тип поля (byte или real), обязательно завершается точкой с запятой.
+	Name string `@Ident`                     // Имя поля.
+	Type string `"=" @("byte" | "real") ";"` // Тип поля (byte или real), обязательно завершается точкой с запятой.
 }
 
 // lex содержит правила для лексического анализа входного текста программы.
